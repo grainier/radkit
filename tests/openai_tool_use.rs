@@ -9,7 +9,6 @@ use radkit::a2a::{
     Message, MessageRole, MessageSendParams, Part, SendMessageResult, SendStreamingMessageResult,
 };
 use radkit::agents::Agent;
-use radkit::events::InternalEvent;
 use radkit::models::OpenAILlm;
 use radkit::sessions::InMemorySessionService;
 use radkit::tools::{FunctionTool, ToolResult};
@@ -238,7 +237,7 @@ async fn test_openai_single_tool_use() {
 
     println!("✅ Validating tool execution in session events:");
     for event in &session.events {
-        if let InternalEvent::MessageReceived { content, .. } = event {
+        if let radkit::sessions::SessionEventType::UserMessage { content } | radkit::sessions::SessionEventType::AgentMessage { content } = &event.event_type {
             for part in &content.parts {
                 match part {
                     radkit::models::content::ContentPart::FunctionCall {
@@ -389,7 +388,7 @@ async fn test_openai_multiple_tool_use() {
 
     println!("✅ Validating multiple tool execution in session events:");
     for event in &session.events {
-        if let InternalEvent::MessageReceived { content, .. } = event {
+        if let radkit::sessions::SessionEventType::UserMessage { content } | radkit::sessions::SessionEventType::AgentMessage { content } = &event.event_type {
             for part in &content.parts {
                 match part {
                     radkit::models::content::ContentPart::FunctionCall { name, .. } => {
@@ -489,7 +488,7 @@ async fn test_openai_streaming_with_tools() {
 
     // ✅ Process streaming events
     println!("✅ Processing streaming events:");
-    while let Some(result) = execution.stream.next().await {
+    while let Some(result) = execution.a2a_stream.next().await {
         match result {
             SendStreamingMessageResult::Message(message) => {
                 println!(
@@ -517,8 +516,9 @@ async fn test_openai_streaming_with_tools() {
     // Give internal events time to be processed
     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
-    while let Ok(internal_event) = execution.internal_events.try_recv() {
-        if let InternalEvent::MessageReceived { content, .. } = internal_event {
+    let mut event_count = 0;
+    while let Some(internal_event) = execution.all_events_stream.next().await {
+        if let radkit::sessions::SessionEventType::UserMessage { content } | radkit::sessions::SessionEventType::AgentMessage { content } = &internal_event.event_type {
             for part in &content.parts {
                 match part {
                     radkit::models::content::ContentPart::FunctionCall { name, .. } => {
@@ -539,6 +539,8 @@ async fn test_openai_streaming_with_tools() {
                 }
             }
         }
+        event_count += 1;
+        if event_count >= 10 { break; } // Process only first 10 events
     }
 
     // ✅ Also validate via session persistence (as fallback)
@@ -554,7 +556,7 @@ async fn test_openai_streaming_with_tools() {
     let mut session_weather_succeeded = false;
 
     for event in &session.events {
-        if let InternalEvent::MessageReceived { content, .. } = event {
+        if let radkit::sessions::SessionEventType::UserMessage { content } | radkit::sessions::SessionEventType::AgentMessage { content } = &event.event_type {
             for part in &content.parts {
                 match part {
                     radkit::models::content::ContentPart::FunctionCall { name, .. } => {
@@ -641,7 +643,7 @@ async fn test_openai_tool_error_handling() {
 
     println!("✅ Validating tool error handling in session events:");
     for event in &session.events {
-        if let InternalEvent::MessageReceived { content, .. } = event {
+        if let radkit::sessions::SessionEventType::UserMessage { content } | radkit::sessions::SessionEventType::AgentMessage { content } = &event.event_type {
             for part in &content.parts {
                 match part {
                     radkit::models::content::ContentPart::FunctionResponse { 

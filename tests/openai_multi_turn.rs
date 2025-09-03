@@ -7,7 +7,6 @@ use radkit::a2a::{
     Message, MessageRole, MessageSendParams, Part, SendMessageResult,
 };
 use radkit::agents::Agent;
-use radkit::events::InternalEvent;
 use radkit::models::OpenAILlm;
 use radkit::sessions::InMemorySessionService;
 use radkit::tools::{FunctionTool, ToolResult};
@@ -325,7 +324,7 @@ async fn test_openai_multi_turn_with_stateful_tools() {
 
     println!("✅ Validating tool execution across all turns:");
     for event in &session.events {
-        if let InternalEvent::MessageReceived { content, .. } = event {
+        if let radkit::sessions::SessionEventType::UserMessage { content } | radkit::sessions::SessionEventType::AgentMessage { content } = &event.event_type {
             for part in &content.parts {
                 match part {
                     radkit::models::content::ContentPart::FunctionCall { name, arguments, .. } => {
@@ -514,7 +513,7 @@ async fn test_openai_cross_task_tool_persistence() {
 
     println!("✅ Validating cross-task tool persistence:");
     for event in &session.events {
-        if let InternalEvent::MessageReceived { content, .. } = event {
+        if let radkit::sessions::SessionEventType::UserMessage { content } | radkit::sessions::SessionEventType::AgentMessage { content } = &event.event_type {
             for part in &content.parts {
                 match part {
                     radkit::models::content::ContentPart::FunctionCall { name, arguments, .. } => {
