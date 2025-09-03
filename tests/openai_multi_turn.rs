@@ -10,7 +10,6 @@ use radkit::agents::Agent;
 use radkit::events::InternalEvent;
 use radkit::models::OpenAILlm;
 use radkit::sessions::InMemorySessionService;
-use radkit::task::InMemoryTaskStore;
 use radkit::tools::{FunctionTool, ToolResult};
 use serde_json::{Value, json};
 use std::collections::HashMap;
@@ -175,7 +174,6 @@ fn create_test_agent_with_tools(tools: Vec<Arc<FunctionTool>>) -> Option<Agent> 
     get_openai_key().map(|api_key| {
         let openai_llm = OpenAILlm::new("gpt-4o-mini".to_string(), api_key);
         let session_service = Arc::new(InMemorySessionService::new());
-        let task_store = Arc::new(InMemoryTaskStore::new());
 
         let base_tools: Vec<Arc<dyn radkit::tools::BaseTool>> = tools
             .into_iter()
@@ -190,7 +188,6 @@ fn create_test_agent_with_tools(tools: Vec<Arc<FunctionTool>>) -> Option<Agent> 
             Arc::new(openai_llm),
         )
         .with_session_service(session_service)
-        .with_task_store(task_store)
         .with_tools(base_tools)
     })
 }

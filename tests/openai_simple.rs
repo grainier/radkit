@@ -13,7 +13,6 @@ use radkit::agents::Agent;
 use radkit::events::InternalEvent;
 use radkit::models::OpenAILlm;
 use radkit::sessions::InMemorySessionService;
-use radkit::task::InMemoryTaskStore;
 use std::sync::Arc;
 
 mod common;
@@ -31,7 +30,6 @@ fn create_test_agent() -> Option<Agent> {
     get_openai_key().map(|api_key| {
         let openai_llm = OpenAILlm::new("gpt-4o-mini".to_string(), api_key);
         let session_service = Arc::new(InMemorySessionService::new());
-        let task_store = Arc::new(InMemoryTaskStore::new());
 
         Agent::new(
             "test_agent".to_string(),
@@ -40,7 +38,6 @@ fn create_test_agent() -> Option<Agent> {
             Arc::new(openai_llm),
         )
         .with_session_service(session_service)
-        .with_task_store(task_store)
     })
 }
 
