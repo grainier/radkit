@@ -99,7 +99,8 @@ fn create_weather_tool() -> FunctionTool {
                 "description": "The city and state, e.g. San Francisco, CA"
             }
         },
-        "required": ["location"]
+        "required": ["location"],
+        "additionalProperties": false
     }))
 }
 
@@ -179,7 +180,8 @@ fn create_calculation_tool() -> FunctionTool {
                 "description": "The second number"
             }
         },
-        "required": ["operation", "a", "b"]
+        "required": ["operation", "a", "b"],
+        "additionalProperties": false
     }))
 }
 

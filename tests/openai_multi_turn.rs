@@ -61,7 +61,8 @@ fn create_counter_tool() -> (Arc<FunctionTool>, Arc<Mutex<i32>>) {
                 "type": "integer",
                 "description": "Amount to increment the counter by (default: 1)"
             }
-        }
+        },
+        "additionalProperties": false
     }));
 
     (Arc::new(tool), counter)
@@ -163,7 +164,8 @@ fn create_memory_tool() -> Arc<FunctionTool> {
                     "description": "The value to store (only for 'set' action)"
                 }
             },
-            "required": ["action"]
+            "required": ["action"],
+            "additionalProperties": false
         })),
     )
 }
