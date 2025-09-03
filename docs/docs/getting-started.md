@@ -6,7 +6,7 @@ This guide will help you get up and running with Radkit, the A2A-native agent de
 
 - **Rust**: Version 1.70 or higher
 - **Cargo**: Rust's package manager
-- **API Keys**: For LLM providers (Anthropic Claude, Google Gemini)
+- **API Keys**: For LLM providers (Anthropic Claude, Google Gemini, OpenAI GPT)
 
 ## Installation
 
@@ -33,6 +33,9 @@ ANTHROPIC_API_KEY=sk-ant-your-key-here
 
 # For Google Gemini
 GEMINI_API_KEY=your-gemini-key-here
+
+# For OpenAI GPT
+OPENAI_API_KEY=your-openai-key-here
 ```
 
 ### Step 2: Basic Agent Creation
